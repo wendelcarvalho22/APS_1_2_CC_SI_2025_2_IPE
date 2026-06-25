@@ -50,9 +50,6 @@ python3 rsa_tkinter.py
 
 Alternativa sem instalar nada: abra `codigo/rsa_app.html` diretamente no navegador.
 
-## 🎥 Vídeo de apresentação
-
-Link disponível em [`video/link_video.md`](video/link_video.md).
 
 ## 📚 Tecnologia utilizada
 

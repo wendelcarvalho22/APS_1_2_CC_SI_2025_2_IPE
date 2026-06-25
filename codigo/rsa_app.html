@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RSA Criptografia – APS 2025</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2430;
+    --border: #30363d;
+    --accent: #238636;
+    --accent2: #1f6feb;
+    --danger: #da3633;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --green: #3fb950;
+    --blue: #58a6ff;
+    --yellow: #d29922;
+    --purple: #bc8cff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .logo {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--accent2), var(--purple));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  header h1 { font-size: 22px; font-weight: 700; }
+  header p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .badge {
+    margin-left: auto;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* LAYOUT */
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 24px;
+  }
+  .tab {
+    flex: 1; padding: 10px; border: none;
+    background: transparent; color: var(--muted);
+    border-radius: 8px; cursor: pointer;
+    font-size: 14px; font-weight: 500;
+    transition: all .2s;
+  }
+  .tab.active {
+    background: var(--surface2);
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,.4);
+  }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 14px; font-weight: 600;
+    color: var(--muted); text-transform: uppercase;
+    letter-spacing: .5px; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* GRID */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media(max-width:700px){ .grid2 { grid-template-columns: 1fr; } }
+
+  /* INPUTS */
+  label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 6px; }
+  textarea, input[type=text], input[type=number] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    resize: vertical;
+    transition: border-color .2s;
+  }
+  textarea:focus, input:focus { outline: none; border-color: var(--accent2); }
+  textarea { min-height: 90px; }
+
+  .char-count { font-size: 12px; color: var(--muted); text-align: right; margin-top: 4px; }
+  .char-count.over { color: var(--danger); }
+
+  /* BUTTONS */
+  .btn {
+    padding: 10px 20px; border: none; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: all .15s; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-green { background: var(--accent); color: #fff; }
+  .btn-green:hover { background: #2ea043; }
+  .btn-blue { background: var(--accent2); color: #fff; }
+  .btn-blue:hover { background: #388bfd; }
+  .btn-red { background: var(--danger); color: #fff; }
+  .btn-red:hover { background: #f85149; }
+  .btn-ghost {
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+
+  /* OUTPUT BOX */
+  .output-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 13px;
+    word-break: break-all;
+    min-height: 80px;
+    white-space: pre-wrap;
+    color: var(--green);
+  }
+  .output-box.blue { color: var(--blue); }
+  .output-box.red { color: #f85149; }
+  .output-box.muted { color: var(--muted); font-style: italic; }
+
+  /* KEY DISPLAY */
+  .key-pair {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  @media(max-width:600px){ .key-pair { grid-template-columns: 1fr; } }
+  .key-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px;
+  }
+  .key-box .key-label {
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .key-box.pub .key-label { color: var(--green); }
+  .key-box.priv .key-label { color: var(--yellow); }
+  .key-value {
+    font-family: monospace; font-size: 12px;
+    color: var(--text); word-break: break-all;
+    line-height: 1.6;
+  }
+
+  /* STEPS VISUALIZER */
+  .steps { display: flex; flex-direction: column; gap: 0; }
+  .step {
+    display: flex; gap: 16px; position: relative;
+    padding-bottom: 20px;
+  }
+  .step:last-child { padding-bottom: 0; }
+  .step-num {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--surface2); border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0;
+    color: var(--muted); transition: all .3s;
+    position: relative; z-index: 1;
+  }
+  .step-num.done { background: var(--accent); border-color: var(--green); color: #fff; }
+  .step-num.active { background: var(--accent2); border-color: var(--blue); color: #fff; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(31,111,235,.4)} 50%{box-shadow:0 0 0 8px rgba(31,111,235,0)} }
+  .step-line {
+    position: absolute; left: 15px; top: 32px;
+    width: 2px; background: var(--border);
+    bottom: 0; z-index: 0;
+  }
+  .step:last-child .step-line { display: none; }
+  .step-line.done { background: var(--green); }
+  .step-content { flex: 1; padding-top: 5px; }
+  .step-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .step-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .step-data {
+    margin-top: 8px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 10px;
+    font-family: monospace; font-size: 12px;
+    color: var(--blue); word-break: break-all;
+    display: none;
+  }
+  .step-data.visible { display: block; }
+
+  /* INFO PANEL */
+  .info-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+  @media(max-width:600px){ .info-grid { grid-template-columns: 1fr; } }
+  .info-card {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; text-align: center;
+  }
+  .info-card .val { font-size: 28px; font-weight: 700; color: var(--blue); }
+  .info-card .lbl { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* FORMULA */
+  .formula {
+    background: var(--bg); border-left: 3px solid var(--accent2);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px; margin: 12px 0;
+    font-family: monospace; font-size: 14px;
+    color: var(--purple); line-height: 1.8;
+  }
+
+  /* COMPARISON TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--surface2); padding: 10px 14px; text-align: left; color: var(--muted); font-weight: 600; }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .tag {
+    display: inline-block; padding: 2px 8px;
+    border-radius: 4px; font-size: 11px; font-weight: 600;
+  }
+  .tag-green { background: rgba(63,185,80,.15); color: var(--green); }
+  .tag-blue { background: rgba(88,166,255,.15); color: var(--blue); }
+  .tag-yellow { background: rgba(210,153,34,.15); color: var(--yellow); }
+  .tag-red { background: rgba(248,81,73,.15); color: #f85149; }
+
+  /* NOTIFICATION */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 20px;
+    font-size: 14px; color: var(--text);
+    transform: translateY(80px); opacity: 0;
+    transition: all .3s; pointer-events: none; z-index: 999;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+
+  /* SCENARIO BOX */
+  .scenario {
+    background: rgba(31,111,235,.08);
+    border: 1px solid rgba(31,111,235,.3);
+    border-radius: 10px; padding: 16px 20px;
+    margin-bottom: 20px; font-size: 14px; line-height: 1.7;
+  }
+  .scenario strong { color: var(--blue); }
+
+  select {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); padding: 10px 14px;
+    font-size: 14px; width: 100%; cursor: pointer;
+  }
+
+  .spinner {
+    display: inline-block; width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,.3);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin .6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🔐</div>
+  <div>
+    <h1>RSA Criptografia — APS 2025</h1>
+    <p>Ciência da Computação · 1º/2º Semestre · Criptografia Assimétrica RSA</p>
+  </div>
+  <div class="badge">128 chars · Tkinter-style</div>
+</header>
+
+<main>
+
+  <!-- SCENARIO -->
+  <div class="scenario">
+    🚢 <strong>Cenário:</strong> Navio apreendido pela Guarda Costeira Brasileira transportando resíduos tóxicos.
+    Comunicações com inspetores são realizadas por helicóptero a <strong>50 km da costa</strong>.
+    Este sistema garante que apenas inspetores autorizados (portadores da chave privada) possam
+    acessar as mensagens cifradas transmitidas à embarcação isolada.
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('cifrar')">🔒 Cifrar</button>
+    <button class="tab" onclick="switchTab('decifrar')">🔓 Decifrar</button>
+    <button class="tab" onclick="switchTab('chaves')">🗝️ Chaves RSA</button>
+    <button class="tab" onclick="switchTab('visual')">📊 Visualizador</button>
+    <button class="tab" onclick="switchTab('info')">📚 Sobre RSA</button>
+  </div>
+
+  <!-- === CIFRAR === -->
+  <div id="tab-cifrar" class="panel active">
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">✉️ Mensagem Original</div>
+        <label>Texto a cifrar (máx. 128 caracteres)</label>
+        <textarea id="msg-input" maxlength="128" placeholder="Digite a mensagem a ser criptografada..." oninput="updateCount('msg-input','msg-count')"></textarea>
+        <div class="char-count" id="msg-count">0 / 128</div>
+
+        <label style="margin-top:14px">Chave Pública (e, n)</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label>e (expoente público)</label>
+            <input type="text" id="pub-e" value="65537" readonly style="color:var(--green)">
+          </div>
+          <div>
+            <label>n (módulo)</label>
+            <input type="text" id="pub-n" value="" placeholder="Gere as chaves primeiro" readonly style="color:var(--green)">
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-green" onclick="cifrar()">🔒 Cifrar Mensagem</button>
+          <button class="btn btn-ghost" onclick="limparCifrar()">🗑️ Limpar</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔒 Mensagem Cifrada</div>
+        <label>Resultado (números separados por espaço)</label>
+        <div class="output-box" id="cipher-output" style="min-height:130px">Aguardando entrada...</div>
+        <div style="margin-top:12px">
+          <label>Representação Hexadecimal</label>
+          <div class="output-box blue" id="hex-output" style="min-height:60px">—</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="copiarTexto('cipher-output')">📋 Copiar cifrado</button>
+          <button class="btn btn-ghost" onclick="enviarParaDecifrar()">➡️ Enviar para decifrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- === DECIFRAR === -->
+  <div id="tab-decifrar" class="panel">
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">🔒 Texto Cifrado</div>
+        <label>Cole aqui o texto cifrado (números separados por espaço)</label>
+        <textarea id="dec-input" placeholder="Cole aqui os números gerados na etapa de cifragem..." style="min-height:130px" oninput="updateCount('dec-input','dec-count')"></textarea>
+        <div class="char-count" id="dec-count">0</div>
+
+        <label style="margin-top:14px">Chave Privada (d, n)</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label>d (expoente privado)</label>
+            <input type="text" id="priv-d" value="" placeholder="Gere as chaves primeiro" readonly style="color:var(--yellow)">
+          </div>
+          <div>
+            <label>n (módulo)</label>
+            <input type="text" id="priv-n" value="" placeholder="Gere as chaves primeiro" readonly style="color:var(--yellow)">
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-blue" onclick="decifrar()">🔓 Decifrar Mensagem</button>
+          <button class="btn btn-ghost" onclick="limparDecifrar()">🗑️ Limpar</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">✉️ Mensagem Recuperada</div>
+        <label>Texto original decifrado</label>
+        <div class="output-box" id="dec-output" style="min-height:130px; color: var(--green)">Aguardando entrada...</div>
+        <div style="margin-top:12px">
+          <label>Verificação de integridade</label>
+          <div class="output-box" id="verify-output" style="min-height:40px; color: var(--muted)">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- === CHAVES === -->
+  <div id="tab-chaves" class="panel">
+    <div class="card">
+      <div class="card-title">⚙️ Geração de Par de Chaves RSA</div>
+      <div class="grid2">
+        <div>
+          <label>Tamanho do primo p</label>
+          <select id="key-size">
+            <option value="demo">Demo (primos pequenos — visível)</option>
+            <option value="small">Pequeno (4 bits)</option>
+            <option value="medium" selected>Médio (8 bits) — Recomendado</option>
+            <option value="large">Grande (16 bits)</option>
+          </select>
+        </div>
+        <div>
+          <label>Modo</label>
+          <select id="key-mode">
+            <option value="random">Aleatório</option>
+            <option value="fixed">Fixo (reproduzível para apresentação)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-green" onclick="gerarChaves()">🗝️ Gerar Par de Chaves</button>
+      </div>
+    </div>
+
+    <div class="card" id="key-result-card" style="display:none">
+      <div class="card-title">🔑 Par de Chaves Gerado</div>
+      <div class="key-pair">
+        <div class="key-box pub">
+          <div class="key-label">🟢 Chave Pública (Pk)</div>
+          <div class="key-value" id="display-pub">—</div>
+        </div>
+        <div class="key-box priv">
+          <div class="key-label">🟡 Chave Privada (Sk) — SECRETA</div>
+          <div class="key-value" id="display-priv">—</div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px">
+        <div class="card-title">📐 Passos da Geração</div>
+        <div id="key-steps" style="font-family:monospace; font-size:13px; line-height:2; color:var(--muted)"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- === VISUALIZADOR === -->
+  <div id="tab-visual" class="panel">
+    <div class="card">
+      <div class="card-title">🎬 Demonstração Passo a Passo</div>
+      <label>Mensagem para demonstrar</label>
+      <input type="text" id="demo-msg" value="Acesso autorizado" maxlength="20">
+      <div class="btn-row">
+        <button class="btn btn-green" onclick="iniciarDemo()">▶️ Iniciar Demonstração</button>
+        <button class="btn btn-ghost" onclick="resetDemo()">↺ Reiniciar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📊 Fluxo RSA em Tempo Real</div>
+      <div class="steps" id="steps-container">
+        <!-- steps inserted by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- === INFO === -->
+  <div id="tab-info" class="panel">
+    <div class="card">
+      <div class="card-title">📚 Fundamentos do RSA</div>
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="val">1977</div>
+          <div class="lbl">Ano de publicação</div>
+        </div>
+        <div class="info-card">
+          <div class="val">2048+</div>
+          <div class="lbl">Bits recomendados (hoje)</div>
+        </div>
+        <div class="info-card">
+          <div class="val">NP</div>
+          <div class="lbl">Classe de complexidade</div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px; font-size:14px; line-height:1.8; color:var(--text)">
+        <p>O RSA foi criado por <strong>Rivest, Shamir e Adleman</strong> no MIT em 1977. É baseado na dificuldade computacional de <strong>fatorar números muito grandes</strong> em seus fatores primos.</p>
+        <br>
+        <div class="formula">
+          Geração: escolher p, q primos → n = p·q → φ(n) = (p-1)(q-1)<br>
+          Chave pública:  (e, n) — onde mdc(e, φ(n)) = 1<br>
+          Chave privada:  (d, n) — onde d·e ≡ 1 (mod φ(n))<br>
+          <br>
+          Cifragem:    C = M^e mod n<br>
+          Decifragem:  M = C^d mod n
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚖️ Comparativo de Técnicas Criptográficas</div>
+      <table>
+        <tr>
+          <th>Técnica</th><th>Tipo</th><th>Chaves</th><th>Velocidade</th><th>Segurança</th><th>Uso principal</th>
+        </tr>
+        <tr>
+          <td><strong>RSA</strong></td>
+          <td><span class="tag tag-blue">Assimétrico</span></td>
+          <td>2 (pública/privada)</td>
+          <td><span class="tag tag-yellow">Lento</span></td>
+          <td><span class="tag tag-green">Alta</span></td>
+          <td>HTTPS, e-mail seguro, certificados</td>
+        </tr>
+        <tr>
+          <td>AES</td>
+          <td><span class="tag tag-green">Simétrico</span></td>
+          <td>1 (compartilhada)</td>
+          <td><span class="tag tag-green">Rápido</span></td>
+          <td><span class="tag tag-green">Alta</span></td>
+          <td>VPN, disco, apps mobile</td>
+        </tr>
+        <tr>
+          <td>DES/3DES</td>
+          <td><span class="tag tag-green">Simétrico</span></td>
+          <td>1 (compartilhada)</td>
+          <td><span class="tag tag-yellow">Médio</span></td>
+          <td><span class="tag tag-red">Baixa (obsoleto)</span></td>
+          <td>Legado bancário</td>
+        </tr>
+        <tr>
+          <td>Diffie-Hellman</td>
+          <td><span class="tag tag-blue">Assimétrico</span></td>
+          <td>2 (efêmeras)</td>
+          <td><span class="tag tag-yellow">Médio</span></td>
+          <td><span class="tag tag-green">Alta</span></td>
+          <td>Troca de chaves TLS</td>
+        </tr>
+        <tr>
+          <td>ChaCha20</td>
+          <td><span class="tag tag-green">Simétrico</span></td>
+          <td>1 (stream)</td>
+          <td><span class="tag tag-green">Muito rápido</span></td>
+          <td><span class="tag tag-green">Alta</span></td>
+          <td>TLS 1.3, QUIC</td>
+        </tr>
+        <tr>
+          <td>César / Vigenère</td>
+          <td><span class="tag tag-green">Simétrico</span></td>
+          <td>1 (simples)</td>
+          <td><span class="tag tag-green">Rápido</span></td>
+          <td><span class="tag tag-red">Muito baixa</span></td>
+          <td>Fins educativos</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🏗️ Aplicações Reais do RSA</div>
+      <div style="font-size:13px; line-height:2; color:var(--text)">
+        <p>🌐 <strong>HTTPS/TLS</strong> — troca inicial de chave de sessão nos handshakes SSL/TLS</p>
+        <p>📧 <strong>PGP / S/MIME</strong> — assinatura e cifração de e-mails</p>
+        <p>🔑 <strong>SSH</strong> — autenticação por chave pública em servidores</p>
+        <p>💳 <strong>Certificados Digitais (PKI)</strong> — ICP-Brasil, certificados A3</p>
+        <p>📱 <strong>WhatsApp / Signal</strong> — troca inicial de chaves no protocolo Signal</p>
+        <p>🏦 <strong>Internet Banking</strong> — autenticação de transações financeiras</p>
+        <p>🚢 <strong>Cenário APS</strong> — comunicação segura entre helicóptero e navio isolado</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div id="toast">✅ Copiado!</div>
+
+<script>
+// ========== RSA MATH (BigInt) ==========
+
+function modpow(base, exp, mod) {
+  if (mod === 1n) return 0n;
+  let result = 1n;
+  base = base % mod;
+  while (exp > 0n) {
+    if (exp % 2n === 1n) result = result * base % mod;
+    exp = exp >> 1n;
+    base = base * base % mod;
+  }
+  return result;
+}
+
+function gcd(a, b) {
+  while (b) { [a, b] = [b, a % b]; }
+  return a;
+}
+
+function modInverse(a, m) {
+  // Extended Euclidean
+  let [old_r, r] = [a, m];
+  let [old_s, s] = [1n, 0n];
+  while (r !== 0n) {
+    const q = old_r / r;
+    [old_r, r] = [r, old_r - q * r];
+    [old_s, s] = [s, old_s - q * s];
+  }
+  if (old_s < 0n) old_s += m;
+  return old_s;
+}
+
+function isPrime(n) {
+  if (n < 2n) return false;
+  if (n === 2n) return true;
+  if (n % 2n === 0n) return false;
+  for (let i = 3n; i * i <= n; i += 2n) {
+    if (n % i === 0n) return false;
+  }
+  return true;
+}
+
+function randomPrime(bits) {
+  while (true) {
+    let n = BigInt(Math.floor(Math.random() * (2 ** bits - 2 ** (bits-1))) + 2 ** (bits-1));
+    if (n % 2n === 0n) n++;
+    if (isPrime(n)) return n;
+  }
+}
+
+const PRIMES_DEMO = [11n, 13n, 17n, 19n, 23n, 29n, 31n, 37n, 41n, 43n];
+const PRIMES_S4 = [13n, 17n, 19n, 23n, 29n, 31n, 37n, 41n, 43n, 47n, 53n, 59n, 61n, 67n];
+const PRIMES_S8 = [103n,107n,109n,113n,127n,131n,137n,139n,149n,151n,157n,163n,167n,173n,179n,181n,191n,193n,197n,199n,211n,223n,227n,229n,233n,239n,241n,251n];
+
+let RSA = { e: null, d: null, n: null, p: null, q: null, phi: null };
+
+function gerarChaves() {
+  const size = document.getElementById('key-size').value;
+  const mode = document.getElementById('key-mode').value;
+
+  let p, q, pool;
+  if (size === 'demo') pool = PRIMES_DEMO;
+  else if (size === 'small') pool = PRIMES_S4;
+  else if (size === 'medium') pool = PRIMES_S8;
+  else pool = null; // large: random
+
+  if (pool) {
+    if (mode === 'fixed') { p = pool[2]; q = pool[5]; }
+    else {
+      let i1 = Math.floor(Math.random() * pool.length);
+      let i2;
+      do { i2 = Math.floor(Math.random() * pool.length); } while (i2 === i1);
+      p = pool[i1]; q = pool[i2];
+    }
+  } else {
+    p = randomPrime(16);
+    q = randomPrime(16);
+    while (q === p) q = randomPrime(16);
+  }
+
+  const n = p * q;
+  const phi = (p - 1n) * (q - 1n);
+  const e = 65537n;
+
+  // Check e is valid, else find one
+  let eUse = e;
+  if (gcd(eUse, phi) !== 1n) {
+    eUse = 3n;
+    while (gcd(eUse, phi) !== 1n) eUse += 2n;
+  }
+
+  const d = modInverse(eUse, phi);
+
+  RSA = { e: eUse, d, n, p, q, phi };
+
+  // Update UI inputs
+  document.getElementById('pub-e').value = eUse.toString();
+  document.getElementById('pub-n').value = n.toString();
+  document.getElementById('priv-d').value = d.toString();
+  document.getElementById('priv-n').value = n.toString();
+
+  // Display
+  document.getElementById('key-result-card').style.display = 'block';
+  document.getElementById('display-pub').innerHTML =
+    `(e, n) =<br>e = ${eUse}<br>n = ${n}`;
+  document.getElementById('display-priv').innerHTML =
+    `(d, n) =<br>d = ${d}<br>n = ${n}`;
+
+  document.getElementById('key-steps').innerHTML = `
+    p = ${p}  (primo escolhido)<br>
+    q = ${q}  (primo escolhido)<br>
+    n = p × q = ${p} × ${q} = ${n}<br>
+    φ(n) = (p-1)(q-1) = ${p-1n} × ${q-1n} = ${phi}<br>
+    e = ${eUse}  (mdc(e, φ(n)) = ${gcd(eUse, phi)})<br>
+    d = e⁻¹ mod φ(n) = ${d}<br>
+    Verificação: d×e mod φ(n) = ${(d * eUse) % phi}  ✓
+  `;
+
+  toast('✅ Par de chaves RSA gerado com sucesso!');
+}
+
+// ========== CIFRAR / DECIFRAR ==========
+
+function cifrar() {
+  if (!RSA.n) {
+    toast('⚠️ Gere as chaves primeiro na aba "Chaves RSA"!'); return;
+  }
+  const msg = document.getElementById('msg-input').value;
+  if (!msg) { toast('⚠️ Digite uma mensagem!'); return; }
+  if (msg.length > 128) { toast('⚠️ Máximo de 128 caracteres!'); return; }
+
+  const cipher = [];
+  for (const ch of msg) {
+    const m = BigInt(ch.charCodeAt(0));
+    const c = modpow(m, RSA.e, RSA.n);
+    cipher.push(c.toString());
+  }
+
+  const cipherStr = cipher.join(' ');
+  document.getElementById('cipher-output').textContent = cipherStr;
+  document.getElementById('cipher-output').className = 'output-box';
+
+  // Hex
+  const hexParts = msg.split('').map(c => c.charCodeAt(0).toString(16).padStart(2,'0'));
+  document.getElementById('hex-output').textContent =
+    'ASCII → HEX: ' + hexParts.join(' ') + '\nCifrado RSA: ' + cipher.map(c => BigInt(c).toString(16)).join(' ');
+
+  toast('🔒 Mensagem cifrada com sucesso!');
+}
+
+function decifrar() {
+  if (!RSA.n) {
+    toast('⚠️ Gere as chaves primeiro na aba "Chaves RSA"!'); return;
+  }
+  const input = document.getElementById('dec-input').value.trim();
+  if (!input) { toast('⚠️ Cole o texto cifrado!'); return; }
+
+  try {
+    const parts = input.split(/\s+/);
+    let result = '';
+    for (const part of parts) {
+      if (!part) continue;
+      const c = BigInt(part);
+      const m = modpow(c, RSA.d, RSA.n);
+      result += String.fromCharCode(Number(m));
+    }
+    document.getElementById('dec-output').textContent = result;
+    document.getElementById('dec-output').style.color = 'var(--green)';
+    document.getElementById('verify-output').textContent = '✅ Decifragem bem-sucedida! Integridade verificada.';
+    document.getElementById('verify-output').style.color = 'var(--green)';
+    toast('🔓 Mensagem decifrada com sucesso!');
+  } catch(e) {
+    document.getElementById('dec-output').textContent = 'Erro: texto cifrado inválido.';
+    document.getElementById('dec-output').style.color = '#f85149';
+    toast('❌ Erro ao decifrar!');
+  }
+}
+
+// ========== DEMO VISUALIZER ==========
+
+const stepsConfig = [
+  { title: 'Seleção de primos (p, q)', desc: 'Dois números primos grandes são escolhidos aleatoriamente. Quanto maiores, mais seguro o RSA.', key: 'pq' },
+  { title: 'Cálculo do módulo n = p·q', desc: 'O produto p×q forma o módulo público n. Fatorar n de volta em p e q é computacionalmente inviável.', key: 'n' },
+  { title: 'Cálculo de φ(n) = (p−1)(q−1)', desc: 'A função de Euler φ(n) representa a quantidade de inteiros positivos menores que n que são coprimos com n.', key: 'phi' },
+  { title: 'Escolha do expoente público e', desc: 'e deve satisfazer: 1 < e < φ(n) e mdc(e, φ(n)) = 1. Comumente usa-se e = 65537.', key: 'e' },
+  { title: 'Cálculo do expoente privado d', desc: 'd é o inverso modular de e módulo φ(n): d·e ≡ 1 (mod φ(n)). Calculado via Algoritmo de Euclides Estendido.', key: 'd' },
+  { title: 'Conversão da mensagem para ASCII', desc: 'Cada caractere da mensagem é convertido para seu código ASCII (número inteiro), a ser cifrado individualmente.', key: 'ascii' },
+  { title: 'Cifragem: C = M^e mod n', desc: 'Cada valor ASCII (M) é elevado ao expoente e e reduzido módulo n. Este é o núcleo matemático do RSA.', key: 'cipher' },
+  { title: 'Transmissão pelo canal inseguro', desc: 'Os valores cifrados (C) são transmitidos livremente. Sem a chave privada (d), são computacionalmente ilegíveis.', key: 'transmit' },
+  { title: 'Decifragem: M = C^d mod n', desc: 'O destinatário usa a chave privada d para recuperar M = C^d mod n, obtendo os valores ASCII originais.', key: 'decipher' },
+  { title: 'Reconstrução da mensagem', desc: 'Os valores ASCII são convertidos de volta para caracteres, recuperando a mensagem original com fidelidade total.', key: 'final' },
+];
+
+let demoStep = -1;
+let demoRSA = null;
+let demoMsg = '';
+let demoCipher = [];
+
+function iniciarDemo() {
+  demoMsg = document.getElementById('demo-msg').value.slice(0, 15) || 'RSA';
+  resetDemo();
+
+  // Gera chaves demo
+  const p = 61n, q = 53n;
+  const n = p * q;
+  const phi = (p-1n)*(q-1n);
+  const e = 17n;
+  const d = modInverse(e, phi);
+  demoRSA = { p, q, n, phi, e, d };
+
+  buildSteps();
+  runSteps();
+}
+
+function buildSteps() {
+  const container = document.getElementById('steps-container');
+  container.innerHTML = '';
+  stepsConfig.forEach((s, i) => {
+    container.innerHTML += `
+      <div class="step" id="step-${i}">
+        <div style="position:relative">
+          <div class="step-num" id="snum-${i}">${i+1}</div>
+          <div class="step-line" id="sline-${i}"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-title">${s.title}</div>
+          <div class="step-desc">${s.desc}</div>
+          <div class="step-data" id="sdata-${i}"></div>
+        </div>
+      </div>`;
+  });
+}
+
+async function runSteps() {
+  const ascii = demoMsg.split('').map(c => c.charCodeAt(0));
+  const cipher = ascii.map(m => modpow(BigInt(m), demoRSA.e, demoRSA.n));
+  const decipher = cipher.map(c => Number(modpow(c, demoRSA.d, demoRSA.n)));
+
+  const data = {
+    pq: `p = ${demoRSA.p},  q = ${demoRSA.q}  (ambos primos ✓)`,
+    n: `n = ${demoRSA.p} × ${demoRSA.q} = ${demoRSA.n}`,
+    phi: `φ(${demoRSA.n}) = (${demoRSA.p}-1)(${demoRSA.q}-1) = ${demoRSA.p-1n}×${demoRSA.q-1n} = ${demoRSA.phi}`,
+    e: `e = ${demoRSA.e}  →  mdc(${demoRSA.e}, ${demoRSA.phi}) = ${gcd(demoRSA.e, demoRSA.phi)} ✓`,
+    d: `d = ${demoRSA.d}  →  d×e mod φ(n) = ${(demoRSA.d*demoRSA.e) % demoRSA.phi} ✓`,
+    ascii: demoMsg.split('').map((c,i) => `'${c}' → ${ascii[i]}`).join('  |  '),
+    cipher: ascii.map((m,i) => `${m}^${demoRSA.e} mod ${demoRSA.n} = ${cipher[i]}`).join('\n'),
+    transmit: `📡 Transmitindo: [ ${cipher.join(', ')} ]`,
+    decipher: cipher.map((c,i) => `${c}^${demoRSA.d} mod ${demoRSA.n} = ${decipher[i]}`).join('\n'),
+    final: `Mensagem recuperada: "${decipher.map(c => String.fromCharCode(c)).join('')}" ✅`,
+  };
+
+  for (let i = 0; i < stepsConfig.length; i++) {
+    await sleep(700);
+    document.getElementById(`snum-${i}`).className = 'step-num active';
+    await sleep(900);
+    const key = stepsConfig[i].key;
+    const el = document.getElementById(`sdata-${i}`);
+    el.textContent = data[key];
+    el.className = 'step-data visible';
+    document.getElementById(`snum-${i}`).className = 'step-num done';
+    document.getElementById(`snum-${i}`).textContent = '✓';
+    if (i > 0) document.getElementById(`sline-${i-1}`).className = 'step-line done';
+  }
+}
+
+function resetDemo() {
+  document.getElementById('steps-container').innerHTML =
+    '<div style="color:var(--muted);font-size:14px;padding:20px 0">Clique em "Iniciar Demonstração" para visualizar o processo RSA passo a passo.</div>';
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ========== HELPERS ==========
+
+function switchTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function updateCount(inputId, countId) {
+  const el = document.getElementById(inputId);
+  const count = document.getElementById(countId);
+  const max = el.maxLength > 0 ? el.maxLength : null;
+  count.textContent = max ? `${el.value.length} / ${max}` : el.value.length;
+  if (max && el.value.length > max * 0.9) count.className = 'char-count over';
+  else count.className = 'char-count';
+}
+
+function copiarTexto(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => toast('📋 Copiado!'));
+}
+
+function enviarParaDecifrar() {
+  const cipher = document.getElementById('cipher-output').textContent;
+  if (cipher === 'Aguardando entrada...') { toast('⚠️ Cifre uma mensagem primeiro!'); return; }
+  document.getElementById('dec-input').value = cipher;
+  switchTabDirect('decifrar');
+  toast('➡️ Texto enviado para a aba Decifrar!');
+}
+
+function switchTabDirect(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.tab')[name==='decifrar'?1:0].classList.add('active');
+}
+
+function limparCifrar() {
+  document.getElementById('msg-input').value = '';
+  document.getElementById('cipher-output').textContent = 'Aguardando entrada...';
+  document.getElementById('hex-output').textContent = '—';
+  updateCount('msg-input', 'msg-count');
+}
+
+function limparDecifrar() {
+  document.getElementById('dec-input').value = '';
+  document.getElementById('dec-output').textContent = 'Aguardando entrada...';
+  document.getElementById('verify-output').textContent = '—';
+  updateCount('dec-input', 'dec-count');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Init: auto-generate keys on load
+window.onload = () => gerarChaves();
+</script>
+</body>
+</html>
